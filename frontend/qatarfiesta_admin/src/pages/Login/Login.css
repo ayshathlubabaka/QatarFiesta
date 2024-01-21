@@ -1,0 +1,137 @@
+.banner{
+  top: 0;
+  text-align: center;
+    background-color: white;
+    background-size: cover;
+    height: 100vh;
+    color: black;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 20px solid black;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 80%; 
+    height: 50px;
+    background-color: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 40px;
+    margin-top: 20px;
+    padding: 0 20px; 
+    z-index: 100; 
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logo {
+    width: 150px;
+    height: auto; /* Maintain the aspect ratio of the logo */
+  }
+
+  .login_container{
+    position: relative;
+    z-index: 1;
+    height: auto;
+    width: 35%;
+    background-color: rgb(81, 79, 79);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px;
+    
+  }
+
+  .login_input {
+    background-color: white;
+    padding: 10px;
+    color: black;
+    font-size: 16px;
+    flex-grow: 1;
+    height: 30px;
+    width: 60%;
+    margin: 10px;
+  }
+
+  .login_header h1{
+    font-size: 30px;
+    color: white;
+  }
+  .submit_btn {
+  padding: 10px;
+  flex-grow: 1;
+  background-color: white;
+  color:black;
+  border-radius: 5px;
+  height: 50px;
+  width: 60%;
+  margin: 15px 0;
+  font-weight: bold;
+  font-size: 80%;
+  margin-bottom: 10px;
+  overflow: hidden;
+  align-items: center;
+}
+
+.submit_btn {
+  width: 40%;
+  height: 40%;
+  font-size: 75%;
+}
+
+  .checkbox-link {
+    text-decoration: none;
+    color: #8c8c8c;
+    
+  }
+
+  .login_footer {
+    margin-top: 20px;
+  margin-left: 15px;
+  text-align: left;
+  color: #8c8c8c;
+  }
+
+  .login_footer a {
+    font-size: 16px;
+  color: brown;
+  text-decoration: none;
+  }
+
+  .login_footer1 {
+    font-size: 14px;
+  color: brown
+  }
+  .login_header {
+    margin-top: 20px;
+  margin-left: 15px;
+  text-align: left;
+  color: white;
+  font-size: 2rem;
+  }
+
+  
+  @media only screen and (max-width: 978px) {
+    .login_container {
+      width: 40%;
+    }
+    .login_header h1 {
+      font-size: 20px;
+    }
+  
+  }
+  
+  @media only screen and (max-width: 600px) {
+    .login_container {
+      width: 90%;
+    }
+    
+  }

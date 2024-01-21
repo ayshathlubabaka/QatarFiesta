@@ -1,0 +1,10 @@
+.dashboard {
+    border: 30px solid black;
+    height: 100vh;
+    padding: 5px;
+}
+
+.table-border {
+    margin: 7%;
+    border: 2px solid black;
+}

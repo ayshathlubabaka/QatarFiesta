@@ -1,0 +1,39 @@
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .heading {
+    color: #333;
+  }
+  
+  .detailsContainer {
+    margin-top: 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #337ab7;
+  }
+  
+  .info {
+    margin-bottom: 8px;
+  }
+  
+  .button {
+    background-color: #5bc0de;
+    color: #fff;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .rejectButton {
+    background-color: #d9534f;
+  }

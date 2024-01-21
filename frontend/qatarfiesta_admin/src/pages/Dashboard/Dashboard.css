@@ -1,0 +1,21 @@
+.dashboard {
+    border: 35px solid black;
+    height: 80vh;
+}
+.sidebar  {
+    height: auto;
+    margin: 12px;
+    background-color: rgb(226, 128, 47);
+}
+.list-group a {
+    background-color: rgb(226, 128, 47);
+}
+.list-group a:hover {
+    background-color: rgb(124, 100, 222);
+    color: white;
+    cursor: pointer;
+}
+.box {
+    border: 1px solid black;
+    background-color: yellow
+}

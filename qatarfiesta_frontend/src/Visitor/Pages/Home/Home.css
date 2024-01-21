@@ -1,0 +1,11 @@
+.navbar-container {
+    z-index: 2; 
+    position: fixed; 
+    width: 100%; 
+    background-color: black;
+  }
+  
+  .banner-container {
+    position: relative;
+    z-index: 1; 
+  }

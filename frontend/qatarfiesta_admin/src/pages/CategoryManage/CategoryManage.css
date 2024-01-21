@@ -1,0 +1,35 @@
+.modal {
+  
+    display: flex;
+    top: 30%;
+    left: 30%;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 14%;
+    left: 40%;
+    width: 20%;
+    height:9.5%;
+    background-color:grey;
+  }
+  
+  .modal-content {
+    background-color: grey;
+    padding: 20px;
+    position: relative;
+  }
+  
+  .close {
+    position: absolute;
+    color: white;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .add-btn{
+    background-color: green;
+    color: white;
+    padding: 2px;
+  }

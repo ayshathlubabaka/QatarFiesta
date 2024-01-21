@@ -1,0 +1,95 @@
+.banner {
+    background-image: url("https://a.cdn-hotels.com/gdcs/production130/d916/313e6bab-c4d1-4a33-a454-f3c0d00c0a2b.jpg");
+    background-size: cover;
+    height: 700px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.content{
+    padding-top: 130px;
+    height: 280px;
+    padding-left: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+
+.title{
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 700;
+    padding-bottom: 15px;
+}
+
+.subtitle {
+    margin: 1rem 0 0;
+    font-size: 1.8rem;
+    font-weight: 400;
+    padding-bottom: 15px;
+}
+
+.description{
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding-bottom: 15px;
+}
+
+
+  .transparent-input {
+    border: 3px solid rgb(11, 11, 11);
+    color: black;
+    font-size: 16px;
+    border-radius: 5px;
+    flex-grow: 1;
+    height: 34px;
+    width: 350px; 
+  }
+  .search_img{
+    height: 20px;
+    width: 20px;
+    vertical-align: middle;
+  }
+  
+  .custom-button {
+    height: 40px;
+    width: 45px;
+    background-color: white;
+    color: rgb(19, 18, 18);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 25px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+  
+  .custom-button:hover {
+    background-color: rgb(81, 74, 74); 
+  }
+  
+
+.fade_bottom{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20rem;
+    background: rgb(0 0 0 / 40%);
+    background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.8) 100%);
+    z-index: 0;
+
+}
+
+.gray {
+    margin-top: auto; 
+    width: 100%;
+    height: 7px;
+    background-color: rgb(37, 37, 37);
+
+}
