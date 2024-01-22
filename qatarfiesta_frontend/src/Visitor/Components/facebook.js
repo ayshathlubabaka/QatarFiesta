@@ -10,8 +10,8 @@ const facebook = async(accessToken) => {
                 token: accessToken,
                 backend: 'facebook',
                 grant_type: 'convert_token',
-                client_id: 'Mw2K1CoKaSkD1qzNS1M2XnxqCLiAimp78yG4tfy5',
-                client_secret: '2F1tOGhmJWNau1BrYPCrfZfcLhEUFjx3a5QnQsj5JZbenWpBsGudILMxRuARU5ZWeMo1uci26w6AxnNr2aN3cHBjYeWCvYpK2ZkU2B1ftHcqeHcmfhbfrexwt6aGTSYI',
+                client_id: 'FACEBOOK_CLIENT_SECRET',
+                client_secret: 'FACEBOOK_CLIENT_ID',
                 
             }),
         });

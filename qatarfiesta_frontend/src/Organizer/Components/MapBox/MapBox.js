@@ -51,7 +51,7 @@ function MapBox({ location, onLocationChange }) {
     <div style={{width:"55vw", height:"50vh", zIndex:999}}>
           <ReactMapGl
         {...viewport}
-        mapboxAccessToken="pk.eyJ1IjoiYXlzaGF0aGx1YmFiYWthIiwiYSI6ImNscmUwb3B6cTFpY2Eya3J2OWlkc3UyNnUifQ.cxRoYt7udL1JuqPO4HTPOg"
+        mapboxAccessToken="REACT_APP_MAPBOX_TOKEN"
         width="100%"
         height="100%"
         transitionDuration={200}
