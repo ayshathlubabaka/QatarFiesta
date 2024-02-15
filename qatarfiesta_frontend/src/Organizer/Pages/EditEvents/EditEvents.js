@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import DatePicker from 'react-datepicker';
 import MapBox from "../../Components/MapBox/MapBox";
 import 'react-datepicker/dist/react-datepicker.css';
+import Sidebar from '../../Components/Sidebar/Sidebar';
 
 function EditEvents() {
 
   const {event_id} = useParams()
   const navigate = useNavigate('')
+  const baseURL = process.env.REACT_APP_API_BASE_URL
+  
 
   useEffect(() => {
     fetchCategoryData();
@@ -28,16 +31,12 @@ function EditEvents() {
     startTime: '',
     endTime: '',
     ticketPrice: '',
-    ticketQuantity: '',
+    ticketQuantity: ''
   })
 
-
-  const handleGoBack = () => {
-    navigate('/organizer/')
-  }
   const [eventLocation, setEventLocation] = useState({
-    latitude: eventData ? eventData.latitude : 25.2598,
-  longitude: eventData ? eventData.longitude : 51.6143,
+    latitude: 25.2598,
+    longitude: 51.6143,
   });
 
   const handleLocationChange = (newLocation) => {
@@ -51,7 +50,7 @@ function EditEvents() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     console.log(file); 
-    // setImage(file);
+    setEventData({...eventData, image: file});
   };
 
 
@@ -59,7 +58,7 @@ function EditEvents() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/organizer/event-change/${event_id}/`, {
+      const response = await fetch(`${baseURL}/api/v1/organizer/event-change/${event_id}/`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',  // Set the content type to JSON
@@ -84,7 +83,7 @@ function EditEvents() {
 
   const fetchCategoryData = async (e) => {
     try{
-        const response = await fetch('http://127.0.0.1:8000/api/v1/admin/category/')
+        const response = await fetch(`${baseURL}/api/v1/admin/category/`)
         const result = await response.json();
         setCategoryData(result);
         console.log(categoryData)
@@ -95,7 +94,7 @@ function EditEvents() {
 
 const fetchEventData = async(e) => {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/organizer/event/')
+    const response = await fetch(`${baseURL}/api/v1/organizer/event/`)
     const result = await response.json();
     console.log('event data',result)
 
@@ -114,8 +113,10 @@ const fetchEventData = async(e) => {
       endTime: selectedObject.endTime,
       category: selectedObject.category,
       ticketPrice: selectedObject.ticketPrice,
-      ticketQuantity: selectedObject.ticketQuantity
+      ticketQuantity: selectedObject.ticketQuantity,
+      image : selectedObject.image
     });
+
   } catch(error) {
     console.error('Error fetching data', error)
   }
@@ -124,8 +125,14 @@ const fetchEventData = async(e) => {
   
 
   return (
-    <div>
-      <button onClick={handleGoBack}>Go back</button>
+      <div className='container-fluid bg-white min-vh-100 '>
+      
+      <div className='row'>
+        <div className='col-2 sidebar'>
+        <Sidebar />
+        </div>
+        <div className='col-md-1'></div>
+        <div className='col-8 ml-3'>
       <div className="header bg-light p-1">
     <div className="table-border m-5 p-2">
       <form onSubmit={handleUpdateEvent}>
@@ -196,8 +203,8 @@ const fetchEventData = async(e) => {
       className="form-control"
       id="image"
       name="image"
-      accept="image/*" 
-      // onChange={handleFileChange} 
+      accept="image/*"
+      onChange={handleFileChange} 
   />
   </div>
 </div>
@@ -285,6 +292,8 @@ const fetchEventData = async(e) => {
       </form>  
     </div>
   </div>
+    </div>
+    </div>
     </div>
   )
 }

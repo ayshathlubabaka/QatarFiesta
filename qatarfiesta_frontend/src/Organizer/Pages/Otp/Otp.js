@@ -8,11 +8,12 @@ function Otp() {
 
     const [email, setEmail] = useState('')
     const [otp, setOtp] = useState('')
+    const baseURL = process.env.REACT_APP_API_BASE_URL
 
     const submit = async(e) => {
         e.preventDefault();
         try {
-        const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/verify-otp/', {
+        const response = await fetch(`${baseURL}/api/v1/accounts/verify-otp/`, {
         method: 'POST',
         headers: {'Content-Type' :'application/json'},
         body: JSON.stringify({

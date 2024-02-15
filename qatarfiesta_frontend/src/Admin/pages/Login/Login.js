@@ -1,23 +1,17 @@
-import React, { useState, useEffect} from 'react'
+import React, { useState} from 'react'
 import './Login.css'
-import { useNavigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode';
 
 function Login() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const navigate = useNavigate();
-
-  const [accessToken, setAccessToken] = useState(null)
-  const [refreshToken, setRefreshToken] = useState(null)
-
-    
+  const baseURL = process.env.REACT_APP_API_BASE_URL
 
   const submit = async(e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/api/token/', {
+      const response = await fetch(`${baseURL}/api/v1/accounts/api/token/`, {
         method: 'POST',
         headers: {'Content-Type' :'application/json'},
         credentials: 'include',
@@ -26,21 +20,28 @@ function Login() {
           password
         })
       });
-      if (response.ok){
-        console.log('ok')
-        const {access, refresh} = await response.json();
-        setAccessToken(access);
-        console.log('accessToken',access)
-        setRefreshToken(refresh);
-        console.log('refreshToken',refresh)
-  
-        localStorage.setItem('access_token', access);
-        localStorage.setItem('refresh_token', refresh);
-  
-        navigate('/admin/')
-      } else {
-        alert('Please enter valid credentials!')
-      }
+      
+        if(response.ok) {
+          const {access, refresh} = await response.json();
+
+            const decodedToken = jwtDecode(access);
+            console.log('decodedToken',decodedToken)
+            if (decodedToken && decodedToken.is_superuser) {
+              
+              localStorage.setItem('access_token', access);
+              localStorage.setItem('refresh_token', refresh);
+        
+              const redirectUrl = localStorage.getItem('redirect_url') || '/admin/';
+              localStorage.removeItem('redirect_url');
+              window.location.replace(redirectUrl);
+        
+
+            }else{
+                alert('not admin')
+            }
+          }else{
+            alert('Invalid credentials')
+        }
       } catch (error) {
         alert('Error during login!', error)
       }

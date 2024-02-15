@@ -7,6 +7,8 @@ function MapBox({ location, onLocationChange }) {
 
     const [newPlace, setNewPlace] = useState(null)
     const [zoomLevel, setZoomLevel] = useState(10);
+    const mapboxToken = process.env.REACT_APP_MAPBOX_TOKEN
+    const mapboxStyle = process.env.REACT_APP_MAPBOX_STYLE
 
     const [viewport, setViewport] = useState({
       latitude: location.latitude,
@@ -51,11 +53,11 @@ function MapBox({ location, onLocationChange }) {
     <div style={{width:"55vw", height:"50vh", zIndex:999}}>
           <ReactMapGl
         {...viewport}
-        mapboxAccessToken="REACT_APP_MAPBOX_TOKEN"
+        mapboxAccessToken={mapboxToken}
         width="100%"
         height="100%"
         transitionDuration={200}
-        mapStyle="mapbox://styles/ayshathlubabaka/clre284hd00bo01qq6p35eyfi"
+        mapStyle={mapboxStyle}
         onDrag={handleDrag}
         onDblClick={handleClick}
         

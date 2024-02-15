@@ -5,16 +5,16 @@ from rest_framework import status
 from .serializers import *
 from myadmin.models import Category
 from organizer.models import Events
-
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
-
+from payment.models import EventBooking
+from payment.serializer import MyBookingSerializer
+from payment.models import Wallet, Transaction
+from organizer.api.serializers import EventSerializer
 
 
 class CategoryAPI(APIView):
     
     def get(self, request):
-        categories = Category.objects.all()
+        categories = Category.objects.all().order_by('-id')
         serializer = CategorySerializer(categories, many = True)
         return Response(serializer.data)
 
@@ -28,13 +28,11 @@ class CategoryAPI(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CategoryChangeAPI(APIView):
     
     def put(self, request, category_id):
-        print(category_id)
         try:
             category = Category.objects.get(id=category_id)
         except Category.DoesNotExist:
@@ -55,95 +53,13 @@ class CategoryChangeAPI(APIView):
         
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
 
-class TicketTypeAPI(APIView):
-
+class GetEventAPI(APIView):
     def get(self, request):
-        ticketTypes = TicketType.objects.all()
-        serializer = TicketTypeSerializer(ticketTypes, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = CreateTicketTypeSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class ChangeTicketTypeAPI(APIView):
-    def put(self, request, ticketType_id):
-        print(ticketType_id)
-        try:
-            ticketType = TicketType.objects.get(id=ticketType_id)
-        except TicketType.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = CreateTicketTypeSerializer(ticketType, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-    def delete(self, request, ticketType_id):
-        try:
-            ticketType = TicketType.objects.get(id=ticketType_id)
-        except TicketType.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        ticketType.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-class AgeGroupAPI(APIView):
-
-    def get(self, request):
-        ageGroups = AgeGroup.objects.all()
-        serializer = AgeGroupSerializer(ageGroups, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request):
-        try:
-            data = request.data
-            serializer = CreateAgeGroupSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class ChangeAgeGroupAPI(APIView):
-    def put(self, request, ageGroup_id):
-        print(ageGroup_id)
-        try:
-            ageGroup = AgeGroup.objects.get(id=ageGroup_id)
-        except AgeGroup.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = CreateAgeGroupSerializer(ageGroup, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-    def delete(self, request, ageGroup_id):
-        try:
-            ageGroup = AgeGroup.objects.get(id=ageGroup_id)
-        except AgeGroup.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        ageGroup.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        events = Events.objects.all().order_by('-id')
+        serializer = EventSerializer(events, many=True)
+        data = serializer.data
+        return Response(data)
     
 class ApproveEventAPI(APIView):
     def put(self, request, event_request_id):
@@ -167,3 +83,31 @@ class RejectEventAPI(APIView):
 
 
 
+class GetBookingAPI(APIView):
+    def get(self, request):
+
+        bookings = EventBooking.objects.all().order_by('-id')
+        serializer = MyBookingSerializer(bookings, many=True)
+
+        return Response(serializer.data)
+    
+class CreditWalletAPI(APIView):
+    def post(self, request, event_id):
+        bookings = EventBooking.objects.filter(event=event_id)
+        for booking in bookings:
+            user = booking.user
+            amount = booking.totalPrice
+            if booking.status == 'complete' and booking.payment_status == 'completed':
+                wallet = Wallet.objects.get(user=user)
+                transaction = Transaction.objects.create(
+                wallet=wallet,
+                amount=amount,
+                transaction_type='credit',
+                event_booking = booking,
+                )
+                booking.status = 'cancelled'
+                booking.payment_status = 'pending'
+                booking.save()
+        return Response({'message': 'Transaction successful', 'transaction_id': transaction.id}, status=status.HTTP_200_OK)  
+            
+        

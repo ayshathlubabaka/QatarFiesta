@@ -10,13 +10,12 @@ function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('')
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const baseURL = process.env.REACT_APP_API_BASE_URL
 
   const submit = async(e) => {
     e.preventDefault();
 
     if (password !== password2) {
-      setPasswordsMatch(false);
       alert('Passwords do not match')
       return;
     }
@@ -26,7 +25,7 @@ function Register() {
     }
   
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/user/register/', {
+    const response = await fetch(`${baseURL}/api/v1/accounts/user/register/`, {
       method: 'POST',
       headers: {'Content-Type' :'application/json'},
       body: JSON.stringify({

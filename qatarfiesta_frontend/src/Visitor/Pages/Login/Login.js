@@ -1,29 +1,20 @@
-import React, {useHistory, useState} from 'react'
+import React, {useEffect, useHistory, useState} from 'react'
 import './Login.css'
 import { useNavigate } from 'react-router-dom'
-import {FacebookLoginButton} from "react-social-login-buttons";
-import {LoginSocialFacebook} from 'reactjs-social-login'
-import facebook from '../../Components/facebook';
 
 function Login() {
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
-  const [accessToken, setAccessToken] = useState(null)
-  const [refreshToken, setRefreshToken] = useState(null)
-
-  const responseFacebook = (response) => {
-    
-    facebook(response.data.accessToken)
-  }
+  const baseURL = process.env.REACT_APP_API_BASE_URL
+  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID
 
 
   const submit = async(e) => {
     e.preventDefault();
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/api/token/', {
+    const response = await fetch(`${baseURL}/api/v1/accounts/api/token/`, {
       method: 'POST',
       headers: {'Content-Type' :'application/json'},
       credentials: 'include',
@@ -35,13 +26,14 @@ function Login() {
     
     if (response.ok){
       const {access, refresh} = await response.json();
-      setAccessToken(access);
-      setRefreshToken(refresh);
 
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
 
-      navigate('/')
+      const redirectUrl = localStorage.getItem('redirect_url') || '/';
+      localStorage.removeItem('redirect_url');
+      window.location.replace(redirectUrl);
+
     } else {
       alert('Please enter valid credentials!')
     }
@@ -49,6 +41,56 @@ function Login() {
       alert('Error during login!', error)
     }
   }
+
+  const handleSignInWithGoogle = async (response) => {
+    try {
+      console.log(response);
+      const payload = response.credential;
+      const serverRes = await fetch(`${baseURL}/api/v1/accounts/google/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          access_token: payload,
+        }),
+      });
+  
+      if (!serverRes.ok) {
+        throw new Error(`HTTP error! Status: ${serverRes.status}`);
+      }
+  
+      const serverData = await serverRes.json();
+      console.log('Server Response:', serverData);
+      const access = serverData.access_token
+      const refresh = serverData.refresh_token
+
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('refresh_token', refresh);
+      
+      const redirectUrl = localStorage.getItem('redirect_url') || '/';
+      localStorage.removeItem('redirect_url');
+      window.location.replace(redirectUrl);
+
+    } catch (error) {
+      console.error('Error during Google Sign-In:', error.message);
+    }
+  };
+
+  useEffect(() => {
+    if(window.google && window.google.accounts)
+    {window.google.accounts.id.initialize({
+      client_id:clientId,
+      callback:handleSignInWithGoogle
+    });
+    window.google.accounts.id.renderButton(
+      document.getElementById('signInDiv'),
+      {theme:"outline", size:"large", text:"continue_with", shape:"circle", width:"280"}
+    )}
+    else {
+      console.error('Google API library not loaded');
+    }
+  }, [])
+
 
 
   return (
@@ -76,18 +118,9 @@ function Login() {
             <div className='login_footer'>
                 <span>New to QatarFiesta? <a href='/Register'>Sign up now</a></span>
             </div>
-            <LoginSocialFacebook
-           appId="311419615043313"
-           onResolve={(response) => {
-            console.log('response', response)
-            responseFacebook(response);
-           }}
-           onReject={(error) => {
-            console.log(error)
-           }}
-           >
-            <FacebookLoginButton />
-           </LoginSocialFacebook>
+            <div className='googleContainer mt-2' id='signInDiv'>
+            </div>
+
         </div>
         <div className="fade_bottom"></div>
     </div>

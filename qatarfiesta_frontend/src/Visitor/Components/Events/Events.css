@@ -1,0 +1,5 @@
+.black-line {
+    border: 1px solid rgb(64, 64, 85);
+    width: 100%; /* To ensure the line spans the entire width */
+    margin: 5px 0; /* Adjust the margin as needed */
+  }

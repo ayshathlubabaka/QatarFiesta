@@ -8,6 +8,7 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from .serializers import *
 from accounts.emails import send_otp_via_email, send_reset_password_email
+from accounts.tasks import send_notification
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -17,6 +18,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.urls import reverse
 from django.http import HttpResponsePermanentRedirect
+from django.utils.encoding import smart_bytes
 
 import os
 import jwt,datetime
@@ -33,10 +35,11 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         token['name'] = user.name
         token['email'] = user.email
-
-        print('token', token)
+        token['is_superuser'] = user.is_superuser
+        token['is_organizer'] = user.is_organizer
 
         return token
+    
     
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -56,7 +59,6 @@ class UserRegisterAPI(APIView):
                 return Response({'errors': 'Email already exist.'}, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class VerifyOTP(APIView):
@@ -85,62 +87,32 @@ class VerifyOTP(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-# class UserLoginAPI(APIView):
-
-#     def post(self, request):
-#         email = request.data['email']
-#         password = request.data['password']
-
-#         user = User.objects.filter(email=email, is_registered = True, is_active = True, is_organizer = False).first()
-
-#         if user is None:
-#             raise AuthenticationFailed('User not found')
-        
-#         if not user.check_password(password):
-#             raise AuthenticationFailed('Incorrect Password')
-        
-#         refresh_token = RefreshToken.for_user(user)
-#         access_token = str(refresh_token.access_token)
-#         print('refresh_token', refresh_token)
-#         print('access_token', access_token)
-
-#         response =  Response()
-#         response.set_cookie(key='refresh_token', value=refresh_token, httponly=True )
-#         response.data = {
-#             'access_token':access_token,
-#         }
-#         return response
     
 class UserViewAPI(APIView):
     def get(self, request):
         user = request.user
-        print("inside user view")
-        if user:
-            serializer = UserSerializer(user)
-            data = serializer.data
-            return Response(data)
-        else:
-            return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            if user:
+                serializer = UserSerializer(user)
+                data = serializer.data
+                return Response(data)
+            else:
+                return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     
 class ResetPasswordView(APIView):
     def post(self, request):
         email = request.data['email']
-        print(email)
-    
         try:
             user = User.objects.get(email=email)
-            print(user.name)
         except User.DoesNotExist:
-            print('user not found')
             return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = ForgotPasswordSerializer(data=request.data)
-        print(serializer.is_valid)
         if serializer.is_valid():
-            print('valid')
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             current_site = get_current_site(request=request).domain
@@ -161,7 +133,6 @@ class PasswordTokenCheckAPI(APIView):
         except(TypeError, OverflowError, User.DoesNotExist):
             user = None
         if user is not None and default_token_generator.check_token(user, token):
-            print(token, uidb64)
             return HttpResponsePermanentRedirect(redirect_url+'?token_valid=True&message=Credentials Valid&uidb64='+uidb64+'&token='+token)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -172,16 +143,11 @@ class SetNewPasswordAPIView(APIView):
         try:
             data = request.data
             serializer = SetNewPasswordSerializer(data=data)
-            print('inside try-block')
             if serializer.is_valid():
-                print('valid set password serializer')
                 return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
 
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
-        
-        print(serializer.errors)
-
         return Response({'success': False, 'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -211,7 +177,6 @@ class OrganizerRegisterAPI(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class OrganizerLoginAPI(APIView):
@@ -245,42 +210,12 @@ class OrganizerLoginAPI(APIView):
         return response
     
     
-# class AdminLoginAPI(APIView):
-
-#     def post(self, request):
-#         email = request.data['email']
-#         password = request.data['password']
-
-#         user = User.objects.filter(email=email, is_superuser = True).first()
-
-#         if user is None:
-#             raise AuthenticationFailed('User not found')
-        
-#         if not user.check_password(password):
-#             raise AuthenticationFailed('Incorrect Password')
-        
-#         payload = {
-#             'id' : user.id,
-#             'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-#             'iat' : datetime.datetime.utcnow()
-#         }
-
-#         token = jwt.encode(payload, 'secret', algorithm='HS256')
-        
-#         response =  Response()
-#         response.set_cookie(key='jwt', value=token, httponly=True )
-#         response.data = {
-#             'jwt':token
-#         }
-#         return response
     
 class AdminViewAPI(APIView):
 
     def get(self, request):
         user = request.user
         if user:
-            print("inside admin view")
-            print("user name is ",user.name)
             serializer = AdminSerializer(user)
             data = serializer.data
             return Response(data)
@@ -298,33 +233,21 @@ class OrganizerViewAPI(APIView):
             return Response(data)
         else:
             return Response({"detail": "User does not exist."}, status=status.HTTP_404_NOT_FOUND)
-    
-# class OrganizerLogoutAPI(APIView):
-    
-#     def post(self,request):
-#         response = Response()
-#         response.delete_cookie('jwt')
-#         response.data = {
-#             'message' : 'success'
-#         }
-#         return response
-        
+
 
 class UserListAPI(APIView):
     def get(self, request):
-        users = User.objects.filter(is_organizer = False, is_superuser = False)
+        users = User.objects.filter(is_organizer = False, is_superuser = False).order_by('-id')
         serializer = UserSerializer(users, many = True)
         return Response(serializer.data)
     
 class OrganizerListAPI(APIView):
     def get(self, request):
-        users = User.objects.filter(is_organizer = True, is_superuser = False)
+        users = User.objects.filter(is_organizer = True, is_superuser = False).order_by('-id')
         serializer = UserSerializer(users, many = True)
         return Response(serializer.data)
     
 class UserOrganizerBlockAPI(APIView):
-    # permission_classes = [IsAuthenticated]\
-
     def patch(self, request, user_id):
             return self.toggle_block_status(user_id, block=True)
 
@@ -342,3 +265,39 @@ class UserOrganizerBlockAPI(APIView):
 
         status_message = 'User blocked' if block else 'User unblocked'
         return Response({'message': f'{status_message} successfully'}, status=status.HTTP_200_OK)
+    
+class UserProfileAPI(APIView):
+    def get(self, request):
+        try:
+            userprofile = UserProfile.objects.get(user = request.user)
+            serializer = UserProfileSerializer(userprofile)
+            return Response(serializer.data)
+        except UserProfile.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+    def post(self, request):
+        try:
+            serializer = UserProfileCreateSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def put(self, request):
+        try:
+            user = request.user
+            userprofile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UserProfileSerializer(userprofile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        

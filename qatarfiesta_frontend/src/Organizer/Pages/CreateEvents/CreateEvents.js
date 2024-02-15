@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import MapBox from "../../Components/MapBox/MapBox";
 import { useNavigate, useParams } from 'react-router-dom';
+import Sidebar from "../../Components/Sidebar/Sidebar";
 
 function CreateEvents({ organizerId }) {
 
@@ -24,6 +25,7 @@ function CreateEvents({ organizerId }) {
   const [ticketPrice, setTicketPrice] = useState('');
   const [ticketQuantity, setTicketQuantity] = useState('');
   const [image, setImage] = useState(null)
+  const baseURL = process.env.REACT_APP_API_BASE_URL
 
   const navigate = useNavigate()
 
@@ -51,32 +53,37 @@ function CreateEvents({ organizerId }) {
     const formattedStartDate = startDate.toISOString().split('T')[0];
     const formattedEndDate = endDate.toISOString().split('T')[0];
 
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('venue', venue);
+    formData.append('address', address);
+    formData.append('latitude', latitude.toString());
+    formData.append('longitude', longitude.toString());
+    formData.append('description', description);
+    formData.append('startDate', formattedStartDate);
+    formData.append('endDate', formattedEndDate);
+    formData.append('startTime', startTime);
+    formData.append('endTime', endTime);
+    formData.append('category', category);
+    formData.append('organizer', organizerId.toString());
+    formData.append('ticketPrice', ticketPrice);
+    formData.append('ticketQuantity', ticketQuantity);
+
+    if (image) {
+      formData.append('image', image);
+    }
+
     
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/organizer/event/', {
+      const response = await fetch(`${baseURL}/api/v1/organizer/event/`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',  // Set the content type to JSON
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
       credentials: 'include',
-      body: JSON.stringify({
-        title,
-        venue,
-        address,
-        latitude: latitude.toString(),
-        longitude: longitude.toString(),
-        description,
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        startTime,
-        endTime,
-        category,
-        organizer: organizerId.toString(),
-        ticketPrice,
-        ticketQuantity,
-      })
+      body: formData
       });
+
       if (response.ok) {
         console.log('Form submitted successfully');
         setTitle('');
@@ -106,7 +113,7 @@ function CreateEvents({ organizerId }) {
   }
   const fetchCategoryData = async (e) => {
     try{
-        const response = await fetch('http://127.0.0.1:8000/api/v1/admin/category/')
+        const response = await fetch(`${baseURL}/api/v1/admin/category/`)
         const result = await response.json();
         setCategoryData(result);
         console.log(categoryData)
@@ -122,8 +129,16 @@ function CreateEvents({ organizerId }) {
 
 
   return (
+    <div className='container-fluid'>
+      <div className='row' style={{height:"2rem"}}>
+      </div>
+      <div className='row' style={{height:"100%"}}>
+        <div className='col-md-2' style={{ background:"rgb(226, 128, 47)"}}>
+          <Sidebar />
+        </div>
+        <div className='col-md-10' style={{height:"100%"}}>
   <div className="header bg-light p-1">
-    <div className="table-border m-5 p-2">
+    <div className="table-border m-3 p-2">
       <form onSubmit={handleSubmit}>
         <h4>Add Event</h4>
         <div className="row mb-3">
@@ -281,6 +296,9 @@ function CreateEvents({ organizerId }) {
           <button className="btn btn-primary mt-1" type="submit">Add Event</button>
       </form>  
     </div>
+  </div>
+  </div>
+  </div>
   </div>
   );
 }

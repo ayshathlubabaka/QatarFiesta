@@ -10,6 +10,7 @@ function ResetPassword() {
   const [uidb64, setUidb64] = useState('')
   const location = useLocation();
   const navigate = useNavigate();
+  const baseURL = process.env.REACT_APP_API_BASE_URL
 
   useEffect(() => {
 
@@ -42,7 +43,7 @@ function ResetPassword() {
       }
 
       try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/set-password/', {
+      const response = await fetch(`${baseURL}/api/v1/accounts/set-password/`, {
       method: 'PATCH',
       headers: {'Content-Type' :'application/json'},
       body: JSON.stringify(requestBody)

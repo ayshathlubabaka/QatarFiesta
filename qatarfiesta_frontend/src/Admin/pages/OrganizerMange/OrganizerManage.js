@@ -1,12 +1,14 @@
 import React, {useState, useEffect} from 'react'
 import './OrganizerManage.css'
-import Sidebar from '../../Components/Sidebar'
+import Sidebar from '../../Components/Sidebar';
 
 function OrganizerManage() {
   const [data, setData] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState('asc');
   const [filter, setFilter] = useState('all');
+  const baseURL = process.env.REACT_APP_API_BASE_URL
+
 
   const handleSort = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -39,7 +41,7 @@ function OrganizerManage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/organizer-list/')
+      const response = await fetch(`${baseURL}/api/v1/accounts/organizer-list/`)
       const result = await response.json();
       setData(result);
     } catch(error) {
@@ -47,15 +49,10 @@ function OrganizerManage() {
     }
   };
 
-  // const filteredData = data.filter((item) => {
-  //   return item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.category.toLowerCase().includes(searchQuery.toLowerCase())
-  // })
-
-
 
   const block = async(ItemId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/api/v1/accounts/user-organizer-block/${ItemId}/`, {
+      await fetch(`${baseURL}/api/v1/accounts/user-organizer-block/${ItemId}/`, {
         method: 'PATCH',
         headers: {'Content-Type' :'application/json'},
         credentials: 'include',
@@ -70,7 +67,7 @@ function OrganizerManage() {
   }
   const unblock = async(ItemId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/api/v1/accounts/user-organizer-block/${ItemId}/`, {
+      await fetch(`${baseURL}/api/v1/accounts/user-organizer-block/${ItemId}/`, {
         method: 'PUT',
         headers: {'Content-Type' :'application/json'},
         credentials: 'include',
@@ -92,10 +89,10 @@ function OrganizerManage() {
             <div className='col-2 sidebar'>
                 <Sidebar />
             </div>
-            <div className='col-8 mt-3 header bg-light'>
+            <div className='col-9 mt-3 header bg-light'>
             <h2>Manage Organizers</h2>
-            <nav className="navbar navbar-light">
-  <div className="container-fluid">
+            <nav className="navbar" style={{marginTop:"100px", marginLeft:"0px"}}>
+  <div className='container mb-5'>
     <form className="d-flex me-auto">
       <input className="form-control me-2" type="text" placeholder="Search" onChange={handleSearch} aria-label="Search" />
       <button className="btn btn-outline-success" type="submit"><i className='bi bi-search'></i></button>
@@ -124,7 +121,7 @@ function OrganizerManage() {
   </div>
 </nav>
               
-        <div className='table-border mt-2'>
+        <div className='table-border' style={{marginTop:"100px"}}>
       <table className="table">
   <thead>
     <tr>

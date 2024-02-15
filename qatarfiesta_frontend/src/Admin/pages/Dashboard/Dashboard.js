@@ -1,83 +1,164 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/js/dist/dropdown'
 import Sidebar from '../../Components/Sidebar'
 import './Dashboard.css'
-import { useNavigate } from 'react-router-dom';
+import {Chart} from 'chart.js/auto'
 
 function Dashboard() {
 
-    const [data, setData] = useState('')
-    const navigate = useNavigate();
+    
+    const [userList, setUserList] = useState([]);
+    const [organizerList, setOrganizerList] = useState([]);
+    const [categoryData, setCategoryList] = useState([]);
+    const [eventData, setEventList] = useState([]);
+    const [bookingData, setBookingList] = useState([]);
+    const baseURL = process.env.REACT_APP_API_BASE_URL
 
-    const [accessToken, setAccessToken] = useState(null);
-    const [refreshToken, setRefreshToken] = useState(null);
+    const pieChartRef = useRef(null);
+    const barChartRef = useRef(null);
 
-  const handleTokenRefresh = async () => {
+
+  const fetchUsersList = async() => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/api/token/refresh/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          refresh: refreshToken,
-        }),
-      });
+      const response = await fetch(`${baseURL}/api/v1/accounts/user-list/`)
+      const result = await response.json();
+      setUserList(result);
+    } catch(error) {
+      console.error('Error fetching data', error)
+    }
+  }
 
-      if (!response.ok) {
-        throw new Error('Token refresh failed');
-      }
-
-      const { access, refresh } = await response.json();
-      setAccessToken(access);
-      setRefreshToken(refresh);
-
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-
-    } catch (error) {
-      console.error('Token refresh failed', error);
+  const fetchOrganizersList = async () => {
+    try {
+      const response = await fetch(`${baseURL}/api/v1/accounts/organizer-list/`)
+      const result = await response.json();
+      setOrganizerList(result);
+    } catch(error) {
+      console.error('Error fetching data', error)
     }
   };
 
-  
+  const fetchCategoryList = async (e) => {
+    try{
+        const response = await fetch(`${baseURL}/api/v1/admin/category/`)
+        const result = await response.json();
+        setCategoryList(result);
+    }catch(error){
+        console.error('Error fetching data', error)
+    }
+  };
 
-  const fetchUser = async() => {
+  const fetchEventList = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/admin/', {
-      method: 'GET',
+      const response = await fetch(`${baseURL}/api/v1/organizer/event/`)
+      const result = await response.json();
+      setEventList(result)
+    } catch(error) {
+      console.error('Error fetching data', error)
+    }
+  };
+
+  const fetchBookingList = async() => {
+    try{
+      const response = await fetch(`${baseURL}/api/v1/admin/booking/`, {
+      method:"GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
       },
-    });
+    })
     if (!response.ok) {
-      navigate('/admin/login/')
       throw new Error('Request failed');
-      
     }
-    const userData = await response.json();
-    if (userData.is_superuser) {
-      console.log('superuser')
-      navigate('/admin/');
-    } else {
-      console.log('not superuser')
-      navigate('/admin/login');
-    }
-    setData(userData);
-    console.log(userData)
-
-      } catch(error) {
-        if (error.status === 401) {
-          await handleTokenRefresh();
-        }
-      }
+    const data = await response.json();
+    setBookingList(data)
+    console.log(data)
+  }catch(error){
+      console.error('Error fetching data', error)
   }
+  }
+
+  useEffect(() => {
+    if (pieChartRef.current && eventData.length > 0 && categoryData.length > 0) {
+      const eventsByCategory = {};
+      eventData.forEach(event => {
+        const categoryId = event.category;
+        if (!eventsByCategory[categoryId]) {
+          eventsByCategory[categoryId] = 0;
+        }
+        eventsByCategory[categoryId]++;
+      });
+
+      const labels = [];
+      const data = [];
+      categoryData.forEach(category => {
+        const categoryId = category.id;
+        const categoryName = category.name;
+        labels.push(categoryName);
+        data.push(eventsByCategory[categoryId] || 0);
+      });
+
+      const ctx = pieChartRef.current.getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.6)',
+              'rgba(54, 162, 235, 0.6)',
+              'rgba(255, 206, 86, 0.6)',
+              'rgba(75, 192, 192, 0.6)',
+              'rgba(153, 102, 255, 0.6)',
+              'rgba(255, 159, 64, 0.6)',
+            ],
+          }],
+        },
+      });
+    }
+  }, [eventData, categoryData]);
+
+  useEffect(() => {
+    if (barChartRef.current && bookingData.length > 0 && eventData.length > 0) {
+      const eventNames = eventData.map(event => event.title);
+      const bookings = eventData.map(event => {
+        const eventBookings = bookingData.filter(booking => booking.event === event.id);
+        return eventBookings.length;
+      });
+
+      const ctx = barChartRef.current.getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: eventNames,
+          datasets: [{
+            label: 'Number of Bookings',
+            data: bookings,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue color for bars
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true, // Start y-axis at zero
+            },
+          },
+        },
+      });
+    }
+  }, [bookingData, eventData]);
 
     useEffect(() => {
       console.log('inside admin home')
-      fetchUser();
+      fetchUsersList();
+      fetchOrganizersList();
+      fetchCategoryList();
+      fetchEventList();
+      fetchBookingList();
     }, []);
 
   return (
@@ -87,8 +168,7 @@ function Dashboard() {
       
       <div className='row'>
         <div className='col-2 sidebar'>
-        <Sidebar
-/>
+        <Sidebar />
         </div>
         <div className='col'>
         <div className='px-3'>
@@ -97,7 +177,25 @@ function Dashboard() {
                 <div className='col-md-3'>
                     <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
                         <div>
-                            <h3 className='fs-2'>230 +</h3>
+                            <h3 className='fs-2'>{userList.length} +</h3>
+                            <p className='fs-5'>Users</p>
+                        </div>
+                        <i className='bi bi-cart-plus p-3 fs-1'></i>
+                    </div>
+                </div>
+                <div className='col-md-3'>
+                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
+                        <div>
+                            <h3 className='fs-2'>{organizerList.length} +</h3>
+                            <p className='fs-5'>Event Organizers</p>
+                        </div>
+                        <i className='bi bi-cart-plus p-3 fs-1'></i>
+                    </div>
+                </div>
+                <div className='col-md-3'>
+                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
+                        <div>
+                            <h3 className='fs-2'>{eventData.length} +</h3>
                             <p className='fs-5'>Events</p>
                         </div>
                         <i className='bi bi-cart-plus p-3 fs-1'></i>
@@ -106,26 +204,8 @@ function Dashboard() {
                 <div className='col-md-3'>
                     <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
                         <div>
-                            <h3 className='fs-2'>230 +</h3>
-                            <p className='fs-5'>Events</p>
-                        </div>
-                        <i className='bi bi-cart-plus p-3 fs-1'></i>
-                    </div>
-                </div>
-                <div className='col-md-3'>
-                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
-                        <div>
-                            <h3 className='fs-2'>230 +</h3>
-                            <p className='fs-5'>Events</p>
-                        </div>
-                        <i className='bi bi-cart-plus p-3 fs-1'></i>
-                    </div>
-                </div>
-                <div className='col-md-3'>
-                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
-                        <div>
-                            <h3 className='fs-2'>230 +</h3>
-                            <p className='fs-5'>Events</p>
+                            <h3 className='fs-2'>{bookingData.length} +</h3>
+                            <p className='fs-5'>Bookings</p>
                         </div>
                         <i className='bi bi-cart-plus p-3 fs-1'></i>
                     </div>
@@ -133,11 +213,11 @@ function Dashboard() {
             </div>
         </div>
         <div className='row'>
-            <div className='col-6 mt-5'>
-                <img style={{height:'400px'}} src='../../../pie chart.png' alt='pie-chart' />
+            <div className='col-6' style={{ width: '400px', height: '400px' }} >
+            <canvas ref={pieChartRef} />
             </div>
-            <div className='col-6 mt-5'>
-                <img style={{height:'400px'}} src='../../../barchart.png' alt='barchart' />
+            <div className='col-6'style={{ width: '600px', height: '400px' }} >
+            <canvas ref={barChartRef}></canvas>
             </div>
         </div>
     </div>

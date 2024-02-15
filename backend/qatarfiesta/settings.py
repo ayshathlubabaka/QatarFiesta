@@ -12,49 +12,51 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 from datetime import timedelta
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wg42y!*$up63__$+q2gb$6l+7tk3l_)_@ucr+5_pv6#&(y2@ol'
-
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'accounts.User'
 
-# Application definition
+
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
+    "django_celery_results",
+
 
     'accounts',
     'myadmin',
     'organizer',
+    'payment',
+    'chat',
 
-    'oauth2_provider',
-    'social_django',
-    'drf_social_oauth2',
+
+    'channels',
+    'channels_redis',
 
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
 ]
 
+
+
 MIDDLEWARE = [
+
     'django.middleware.security.SecurityMiddleware',
 
     "corsheaders.middleware.CorsMiddleware",
@@ -74,26 +76,11 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        # 'drf_social_oauth2.authentication.SocialAuthentication',
     ],
     
 }
 
-AUTHENTICATION_BACKENDS = (
-    # drf_social_oauth2
-    'drf_social_oauth2.backends.DjangoOAuth2',
 
-    # Facebook OAuth2
-    'social_core.backends.facebook.FacebookAppOAuth2',
-    'social_core.backends.facebook.FacebookOAuth2',
-
-    # Google OAuth2
-    'social_core.backends.google.GoogleOAuth2',
-
-    # Django
-    'django.contrib.auth.backends.ModelBackend',
-)
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
@@ -147,27 +134,30 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'qatarfiesta.wsgi.application'
+# WSGI_APPLICATION = 'qatarfiesta.wsgi.application'
+ASGI_APPLICATION = 'qatarfiesta.asgi.application'
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'qatarfiesta',
-        'USER' : 'postgres',
-        'PASSWORD' : 'admin1234',
-        'HOST' : 'localhost'
+        'ENGINE': config('DB_ENGINE'),
+        'NAME': config('DB_NAME'),
+        'USER' : config('DB_USER'),
+        'PASSWORD' : config('DB_PASSWORD'),
+        'HOST' : config('DB_HOST')
     }
 }
 
@@ -224,59 +214,39 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'ayshathlubabaka@gmail.com'
-EMAIL_HOST_PASSWORD = 'yuimciyawqnkooxl'
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS',cast=bool, default=True)
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-REDIRECT_URL = 'http://localhost:3000/reset-password/'
+REDIRECT_URL = config('REDIRECT_URL')
 
-# DRFSO2_PROPRIETARY_BACKEND_NAME = 'Facebook', 'Google'
-# DRFSO2_URL_NAMESPACE = 'drf'
 
-# Facebook configuration
-SOCIAL_AUTH_FACEBOOK_KEY = '311419615043313'
-SOCIAL_AUTH_FACEBOOK_SECRET = '685efe0eb2ede6991da58f5a62c2c7a5'
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
+SOCIAL_AUTH_PASSWORD = config('SOCIAL_AUTH_PASSWORD')
 
-# SOCIAL_AUTH_PIPELINE = (
-#     "social_core.pipeline.social_auth.social_details",
-#     "social_core.pipeline.social_auth.social_uid",
-#     "social_core.pipeline.social_auth.social_user",
-#     "social_core.pipeline.user.get_username",
-#     'social_core.pipeline.user.create_user',
-#     "accounts.pipeline.social_auth_create_user",
-#     "social_core.pipeline.social_auth.associate_by_email",
-#     "social_core.pipeline.social_auth.associate_user",
-#     "social_core.pipeline.social_auth.load_extra_data",
-#     "social_core.pipeline.user.user_details",
-# )
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+STRIPE_PUBLIC_KEY= config('STRIPE_PUBLIC_KEY')
 
-SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
-    'myapp.pipeline.load_user',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-)
+SITE_URL=config('SITE_URL')
 
-SOCIAL_AUTH_FACEBOOK_API_VERSION = '2.8'
-
-# Define SOCIAL_AUTH_FACEBOOK_SCOPE to get extra permissions from Facebook.
-# Email is not sent by default, to get it, you must request the email permission.
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-    'fields': 'id, name, email, age_range'
-}
-
-SOCIAL_AUTH_USER_FIELDS = ['name', 'email', 'password']
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 10
+
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_IMPORTS = ['accounts.tasks']
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

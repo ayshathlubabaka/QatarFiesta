@@ -2,7 +2,7 @@
     z-index: 2; 
     position: fixed; 
     width: 100%; 
-    background-color: black;
+    background-color: rgb(64, 64, 85);
   }
   
   .banner-container {

@@ -1,15 +1,17 @@
 import React, {useState, useEffect} from 'react'
 import './UserManage.css'
 import Sidebar from '../../Components/Sidebar'
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 function UserManage() {
 
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [sortOrder, setSortOrder] = useState('asc');
-  const navigate = useNavigate()
   const [filter, setFilter] = useState('all');
+  const navigate = useNavigate('')
+  const baseURL = process.env.REACT_APP_API_BASE_URL
+
 
   const handleSort = () => {
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -37,7 +39,7 @@ function UserManage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/user-list/')
+      const response = await fetch(`${baseURL}/api/v1/accounts/user-list/`)
       const result = await response.json();
       setData(result);
     } catch(error) {
@@ -51,7 +53,7 @@ function UserManage() {
 
   const block = async(ItemId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/api/v1/accounts/user-organizer-block/${ItemId}/`, {
+      await fetch(`${baseURL}/api/v1/accounts/user-organizer-block/${ItemId}/`, {
         method: 'PATCH',
         headers: {'Content-Type' :'application/json'},
         credentials: 'include',
@@ -66,7 +68,7 @@ function UserManage() {
   }
   const unblock = async(ItemId) => {
     try {
-      await fetch(`http://127.0.0.1:8000/api/v1/accounts/user-organizer-block/${ItemId}/`, {
+      await fetch(`${baseURL}/api/v1/accounts/user-organizer-block/${ItemId}/`, {
         method: 'PUT',
         headers: {'Content-Type' :'application/json'},
         credentials: 'include',
@@ -86,10 +88,10 @@ function UserManage() {
             <div className='col-2 sidebar'>
                 <Sidebar />
             </div>
-            <div className='col-8 mt-3 header bg-light'>
+            <div className='col-9 header bg-light'>
             <h2>Manage Users</h2>
-              <nav class="navbar navbar-light">
-  <div class="container-fluid">
+            <nav className="navbar" style={{marginTop:"90px",marginLeft:"0px"}}>
+  <div class="container mb-5">
     <form class="d-flex me-auto">
       <input class="form-control me-2" type="search" placeholder="Search" onChange={(e) => setSearch(e.target.value)} aria-label="Search" />
       <button class="btn btn-outline-success" type="submit"><i className='bi bi-search'></i></button>
@@ -116,7 +118,7 @@ function UserManage() {
 </div>
   </div>
 </nav>
-        <div className='table-border mt-2'>
+        <div className='table-border' style={{marginTop:"100px"}}>
       <table class="table">
   <thead>
     <tr>

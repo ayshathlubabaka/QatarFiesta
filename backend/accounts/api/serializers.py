@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from accounts.models import User
+from accounts.models import User, UserProfile
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from rest_framework.exceptions import AuthenticationFailed
 
 class UserSerializer(serializers.ModelSerializer):
@@ -29,12 +29,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ('name', 'email', 'password', 'password2')  
     
-    # def validate(self, attrs):
-    #     return super().validate(attrs)
-    
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            print('User with this email already exists.')
             raise serializers.ValidationError('User with this email already exists.')
         return value
 
@@ -95,11 +91,8 @@ class SetNewPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         try:
             password = attrs.get('password')
-            print(password)
             token = attrs.get('token')
-            print(token)
             uidb64 = attrs.get('uidb64')
-            print(uidb64)
 
             id = force_str(urlsafe_base64_decode(uidb64))
 
@@ -114,9 +107,29 @@ class SetNewPasswordSerializer(serializers.Serializer):
             return (user)
         except Exception as e:
             raise AuthenticationFailed('The reset link is invalid', 401)
-        return super().validate(attrs)
-        
+    
+class UserProfileCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
 
+    def create(self, validated_data):
+
+        userprofile = UserProfile.objects.create(
+            first_name=validated_data['first_name'],
+            last_name = validated_data['last_name'],
+            phone_number = validated_data['phone_number'],
+            address = validated_data['address'],
+            gender = validated_data['gender'],
+            user = validated_data['user']
+        )
+
+        return userprofile
+        
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
  
 
     

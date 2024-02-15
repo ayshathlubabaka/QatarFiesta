@@ -4,6 +4,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/js/dist/dropdown'
 import { useNavigate, useParams } from 'react-router-dom';
 import GoogleMapLocator from '../../Components/GoogleMapLocator';
+import Sidebar from "../../Components/Sidebar/Sidebar";
 
 
 function EventView() {
@@ -12,13 +13,14 @@ function EventView() {
     const [data, setData] = useState('')
     const [eventData, setEventData] = useState('')
     const navigate = useNavigate();
+    const baseURL = process.env.REACT_APP_API_BASE_URL
 
     const [accessToken, setAccessToken] = useState(null);
     const [refreshToken, setRefreshToken] = useState(null);
 
     const handleTokenRefresh = async () => {
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/api/token/refresh/', {
+          const response = await fetch(`${baseURL}/api/v1/accounts/api/token/refresh/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -48,7 +50,7 @@ function EventView() {
     
       const fetchUser = async() => {
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/organizer/', {
+          const response = await fetch(`${baseURL}/api/v1/accounts/organizer/`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -67,13 +69,14 @@ function EventView() {
           } catch(error) {
             if (error.status === 401) {
               await handleTokenRefresh();
+              await fetchUser();
             }
           }
       }
     
       const fetchEventData = async () => {
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/organizer/event/')
+          const response = await fetch(`${baseURL}/api/v1/organizer/event/`)
           const result = await response.json();
           console.log('event data',result)
     
@@ -90,31 +93,46 @@ function EventView() {
       }, [event_id]);
     
   return (
-    <div className='container-fluid bg-white min-vh-100 dashboard'>
-      <button onClick={() => navigate('/organizer/')}>Go Back</button>
-      <div className='row'>
-        <div className='col'>
-        <div className='px-3'>
-        {eventData !== null ? (
-  <div className='container-fluid border border-dark mt-3'>
-    <h4>Title: {eventData.title}</h4>
-    <p>Category: {eventData.category}</p>
-  <GoogleMapLocator latitude={eventData.latitude} longitude={eventData.longitude} />
-  <p>Location: {eventData.venue},{eventData.address}</p>
-  <p>Date: {eventData.startDate} to {eventData.endDate}</p>
-  <p>Time: {eventData.startTime} to {eventData.endTime}</p>
-  <p>Price: {eventData.ticketPrice} QAR</p>
-  <p>{eventData.description}</p>
-
-
-  </div>
-) : (
-  <p>Loading...</p>
-)}
+    <div className='container-fluid bg-white min-vh-100 '>
+      
+    <div className='row'>
+      <div className='col-2 sidebar'>
+      <Sidebar />
+      </div>
+      <div className='col-md-1'></div>
+      <div className='col-7 ml-3'>
+      {eventData !== null ? (
+        <div className='container-fluid1 border border-dark mt-3 mb-3'>
+          <h4 className='event-title'>{eventData.title}</h4>
+          <div className='image-map-container'>
+            <img src={eventData.image} alt='event-image' className='event-image' />
+          </div>
+          <div style={{width:"72rem"}}>
+          <GoogleMapLocator latitude={eventData.latitude} longitude={eventData.longitude} />
+          </div>
+          <div className='event-info'>
+            <p>
+              <strong>Location:</strong> {eventData.venue}, {eventData.address}
+            </p>
+            <p>
+              <strong>Date:</strong> {eventData.startDate} to {eventData.endDate}
+            </p>
+            <p>
+              <strong>Time:</strong> {eventData.startTime} to {eventData.endTime}
+            </p>
+            <p>
+              <strong>Price:</strong> {eventData.ticketPrice} QAR
+            </p>
+            <p>{eventData.description}</p>
+          </div>
         </div>
-        </div>
+        
+      ) : (
+        <p>Loading...</p>
+      )}
       </div>
     </div>
+  </div>
   )
 }
 

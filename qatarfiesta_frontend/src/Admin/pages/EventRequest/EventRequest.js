@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom';
 import './EventRequest.css';
-
 function EventRequest() {
 
     const {event_request_id} = useParams()
     const [data, setData] = useState(null)
     const navigate = useNavigate();
-
-    const [accessToken, setAccessToken] = useState(null);
-    const [refreshToken, setRefreshToken] = useState(null);
+    const baseURL = process.env.REACT_APP_API_BASE_URL
 
     const formatDate = (dateString) => {
       return new Date(dateString).toLocaleDateString();
@@ -19,68 +16,9 @@ function EventRequest() {
       return new Date(`1970-01-01T${timeString}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-  const handleTokenRefresh = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/api/token/refresh/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          refresh: refreshToken,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Token refresh failed');
-      }
-
-      const { access, refresh } = await response.json();
-      setAccessToken(access);
-      setRefreshToken(refresh);
-
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-
-    } catch (error) {
-      console.error('Token refresh failed', error);
-    }
-  };
-
-  
-
-  const fetchUser = async() => {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/admin/', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    });
-    if (!response.ok) {
-      navigate('/admin/login/')
-      throw new Error('Request failed');
-      
-    }
-    const userData = await response.json();
-    if (userData.is_superuser) {
-      navigate('/admin/event_request/:event_request_id');
-    } else {
-      navigate('/admin/login');
-    }
-    setData(userData);
-    console.log(userData)
-
-      } catch(error) {
-        if (error.status === 401) {
-          await handleTokenRefresh();
-        }
-      }
-  }
-
     const fetchEventData = async () => {
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/organizer/event/')
+          const response = await fetch(`${baseURL}/api/v1/organizer/event/`)
           const result = await response.json();
           const selectedObject = result.find((event) => event.id === parseInt(event_request_id));
           setData(selectedObject);
@@ -90,13 +28,12 @@ function EventRequest() {
       };
     
       useEffect(() => {
-        fetchUser();
         fetchEventData();
       }, []);
 
       const handleApproval = async(event_request_id) => {
         try {
-            await fetch(`http://127.0.0.1:8000/api/v1/admin/approve-event-request/${data.id}/`, {
+            await fetch(`${baseURL}/api/v1/admin/approve-event-request/${data.id}/`, {
               method: 'PUT',
               headers: {'Content-Type' :'application/json'},
               credentials: 'include',
@@ -111,8 +48,10 @@ function EventRequest() {
         }
 
       const handleReject = async() => {
+        const isConfirmed = window.confirm('Are you sure you want to reject this event?');
+        if (isConfirmed) {
         try {
-          await fetch(`http://127.0.0.1:8000/api/v1/admin/reject-event-request/${data.id}/`, {
+          await fetch(`${baseURL}/api/v1/admin/reject-event-request/${data.id}/`, {
             method: 'PUT',
             headers: {'Content-Type' :'application/json'},
             credentials: 'include',
@@ -123,8 +62,11 @@ function EventRequest() {
         } catch (error) {
           console.error('Something went error:', error);
         }
+      } else {
+        console.log('Event cancellation is not success')
+      }
         navigate('/admin/')
-        }
+        } 
 
   return (
     <div className="container">

@@ -6,14 +6,13 @@ class EventSerializer(serializers.ModelSerializer):
         model = Events
         fields = '__all__'
 
+
 class AddEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Events
         fields = '__all__'
 
     def create(self, validated_data):
-
-        print('inside create')
 
         event = Events.objects.create(
             title = validated_data['title'],

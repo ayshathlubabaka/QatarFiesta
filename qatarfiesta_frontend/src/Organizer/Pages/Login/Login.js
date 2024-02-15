@@ -1,22 +1,17 @@
-import React, {useHistory, useState} from 'react'
+import React, {useState} from 'react'
 import './Login.css'
-import { useNavigate } from 'react-router-dom'
 
 function Login() {
 
-  const navigate = useNavigate()
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
-  const [accessToken, setAccessToken] = useState(null)
-  const [refreshToken, setRefreshToken] = useState(null)
-
+  const baseURL = process.env.REACT_APP_API_BASE_URL
+  
 
   const submit = async(e) => {
     e.preventDefault();
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/accounts/api/token/', {
+    const response = await fetch(`${baseURL}/api/v1/accounts/api/token/`, {
       method: 'POST',
       headers: {'Content-Type' :'application/json'},
       credentials: 'include',
@@ -29,15 +24,14 @@ function Login() {
     if (response.ok){
       console.log('ok')
       const {access, refresh} = await response.json();
-      setAccessToken(access);
-      console.log('accessToken',access)
-      setRefreshToken(refresh);
-      console.log('refreshToken',refresh)
 
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
 
-      navigate('/organizer/')
+      const redirectUrl = localStorage.getItem('redirect_url') || '/organizer/';
+      localStorage.removeItem('redirect_url');
+      window.location.replace(redirectUrl);
+
     } else {
       alert('Please enter valid credentials!')
     }
@@ -52,7 +46,7 @@ function Login() {
        <div>
         <div className='navbar'>
         <div className="logo-container">
-        <a href='#' target="_blank" rel="noopener noreferrer"><img className="logo" src="../../../Image-1 (4).jpg" alt="Qatarfiesta Logo" /></a>
+        <a href='/' target="_blank" rel="noopener noreferrer"><img className="logo" src="../../../Image-1 (4).jpg" alt="Qatarfiesta Logo" /></a>
         </div>
 
         </div>
