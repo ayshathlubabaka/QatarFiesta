@@ -1,88 +1,91 @@
-import React, { useState, useEffect, useRef } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'bootstrap/js/dist/dropdown'
-import Sidebar from '../../Components/Sidebar'
-import './Dashboard.css'
-import {Chart} from 'chart.js/auto'
+import React, { useState, useEffect, useRef } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "bootstrap/js/dist/dropdown";
+import Sidebar from "../../Components/Sidebar";
+import "./Dashboard.css";
+import { Chart } from "chart.js/auto";
 
 function Dashboard() {
+  const [userList, setUserList] = useState([]);
+  const [organizerList, setOrganizerList] = useState([]);
+  const [categoryData, setCategoryList] = useState([]);
+  const [eventData, setEventList] = useState([]);
+  const [bookingData, setBookingList] = useState([]);
+  const baseURL = process.env.REACT_APP_API_BASE_URL;
 
-    
-    const [userList, setUserList] = useState([]);
-    const [organizerList, setOrganizerList] = useState([]);
-    const [categoryData, setCategoryList] = useState([]);
-    const [eventData, setEventList] = useState([]);
-    const [bookingData, setBookingList] = useState([]);
-    const baseURL = process.env.REACT_APP_API_BASE_URL
+  const pieChartRef = useRef(null);
+  const barChartRef = useRef(null);
 
-    const pieChartRef = useRef(null);
-    const barChartRef = useRef(null);
-
-
-  const fetchUsersList = async() => {
+  const fetchUsersList = async () => {
     try {
-      const response = await fetch(`${baseURL}/api/v1/accounts/user-list/`)
+      const response = await fetch(`${baseURL}/api/v1/accounts/user-list/`);
       const result = await response.json();
       setUserList(result);
-    } catch(error) {
-      console.error('Error fetching data', error)
+    } catch (error) {
+      console.error("Error fetching data", error);
     }
-  }
+  };
 
   const fetchOrganizersList = async () => {
     try {
-      const response = await fetch(`${baseURL}/api/v1/accounts/organizer-list/`)
+      const response = await fetch(
+        `${baseURL}/api/v1/accounts/organizer-list/`
+      );
       const result = await response.json();
       setOrganizerList(result);
-    } catch(error) {
-      console.error('Error fetching data', error)
+    } catch (error) {
+      console.error("Error fetching data", error);
     }
   };
 
   const fetchCategoryList = async (e) => {
-    try{
-        const response = await fetch(`${baseURL}/api/v1/admin/category/`)
-        const result = await response.json();
-        setCategoryList(result);
-    }catch(error){
-        console.error('Error fetching data', error)
+    try {
+      const response = await fetch(`${baseURL}/api/v1/admin/category/`);
+      const result = await response.json();
+      setCategoryList(result);
+    } catch (error) {
+      console.error("Error fetching data", error);
     }
   };
 
   const fetchEventList = async () => {
     try {
-      const response = await fetch(`${baseURL}/api/v1/organizer/event/`)
+      const response = await fetch(`${baseURL}/api/v1/organizer/event/`);
       const result = await response.json();
-      setEventList(result)
-    } catch(error) {
-      console.error('Error fetching data', error)
+      setEventList(result);
+    } catch (error) {
+      console.error("Error fetching data", error);
     }
   };
 
-  const fetchBookingList = async() => {
-    try{
+  const fetchBookingList = async () => {
+    try {
       const response = await fetch(`${baseURL}/api/v1/admin/booking/`, {
-      method:"GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-      },
-    })
-    if (!response.ok) {
-      throw new Error('Request failed');
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+      const data = await response.json();
+      setBookingList(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching data", error);
     }
-    const data = await response.json();
-    setBookingList(data)
-    console.log(data)
-  }catch(error){
-      console.error('Error fetching data', error)
-  }
-  }
+  };
 
   useEffect(() => {
-    if (pieChartRef.current && eventData.length > 0 && categoryData.length > 0) {
+    if (
+      pieChartRef.current &&
+      eventData.length > 0 &&
+      categoryData.length > 0
+    ) {
       const eventsByCategory = {};
-      eventData.forEach(event => {
+      eventData.forEach((event) => {
         const categoryId = event.category;
         if (!eventsByCategory[categoryId]) {
           eventsByCategory[categoryId] = 0;
@@ -92,29 +95,31 @@ function Dashboard() {
 
       const labels = [];
       const data = [];
-      categoryData.forEach(category => {
+      categoryData.forEach((category) => {
         const categoryId = category.id;
         const categoryName = category.name;
         labels.push(categoryName);
         data.push(eventsByCategory[categoryId] || 0);
       });
 
-      const ctx = pieChartRef.current.getContext('2d');
+      const ctx = pieChartRef.current.getContext("2d");
       new Chart(ctx, {
-        type: 'pie',
+        type: "pie",
         data: {
           labels: labels,
-          datasets: [{
-            data: data,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.6)',
-              'rgba(54, 162, 235, 0.6)',
-              'rgba(255, 206, 86, 0.6)',
-              'rgba(75, 192, 192, 0.6)',
-              'rgba(153, 102, 255, 0.6)',
-              'rgba(255, 159, 64, 0.6)',
-            ],
-          }],
+          datasets: [
+            {
+              data: data,
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(54, 162, 235, 0.6)",
+                "rgba(255, 206, 86, 0.6)",
+                "rgba(75, 192, 192, 0.6)",
+                "rgba(153, 102, 255, 0.6)",
+                "rgba(255, 159, 64, 0.6)",
+              ],
+            },
+          ],
         },
       });
     }
@@ -122,22 +127,26 @@ function Dashboard() {
 
   useEffect(() => {
     if (barChartRef.current && bookingData.length > 0 && eventData.length > 0) {
-      const eventNames = eventData.map(event => event.title);
-      const bookings = eventData.map(event => {
-        const eventBookings = bookingData.filter(booking => booking.event === event.id);
+      const eventNames = eventData.map((event) => event.title);
+      const bookings = eventData.map((event) => {
+        const eventBookings = bookingData.filter(
+          (booking) => booking.event === event.id
+        );
         return eventBookings.length;
       });
 
-      const ctx = barChartRef.current.getContext('2d');
+      const ctx = barChartRef.current.getContext("2d");
       new Chart(ctx, {
-        type: 'bar',
+        type: "bar",
         data: {
           labels: eventNames,
-          datasets: [{
-            label: 'Number of Bookings',
-            data: bookings,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue color for bars
-          }],
+          datasets: [
+            {
+              label: "Number of Bookings",
+              data: bookings,
+              backgroundColor: "rgba(54, 162, 235, 0.6)", // Blue color for bars
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -152,79 +161,82 @@ function Dashboard() {
     }
   }, [bookingData, eventData]);
 
-    useEffect(() => {
-      console.log('inside admin home')
-      fetchUsersList();
-      fetchOrganizersList();
-      fetchCategoryList();
-      fetchEventList();
-      fetchBookingList();
-    }, []);
+  useEffect(() => {
+    console.log("inside admin home");
+    fetchUsersList();
+    fetchOrganizersList();
+    fetchCategoryList();
+    fetchEventList();
+    fetchBookingList();
+  }, []);
 
   return (
-    
-
-    <div className='container-fluid bg-white min-vh-100 dashboard'>
-      
-      <div className='row'>
-        <div className='col-2 sidebar'>
-        <Sidebar />
+    <div className="container-fluid bg-white min-vh-100 dashboard">
+      <div className="row">
+        <div className="col-2 sidebar">
+          <Sidebar />
         </div>
-        <div className='col'>
-        <div className='px-3'>
-        <div className='container-fluid'>
-            <div className='row g-3 my-2'>
-                <div className='col-md-3'>
-                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
-                        <div>
-                            <h3 className='fs-2'>{userList.length} +</h3>
-                            <p className='fs-5'>Users</p>
-                        </div>
-                        <i className='bi bi-cart-plus p-3 fs-1'></i>
+        <div className="col">
+          <div className="px-3">
+            <div className="container-fluid">
+              <div className="row g-3 my-2">
+                <div className="col-md-3">
+                  <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
+                    <div>
+                      <h3 className="fs-2">{userList.length} +</h3>
+                      <p className="fs-5">Users</p>
                     </div>
+                    <i className="bi bi-cart-plus p-3 fs-1"></i>
+                  </div>
                 </div>
-                <div className='col-md-3'>
-                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
-                        <div>
-                            <h3 className='fs-2'>{organizerList.length} +</h3>
-                            <p className='fs-5'>Event Organizers</p>
-                        </div>
-                        <i className='bi bi-cart-plus p-3 fs-1'></i>
+                <div className="col-md-3">
+                  <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
+                    <div>
+                      <h3 className="fs-2">{organizerList.length} +</h3>
+                      <p className="fs-5">Event Organizers</p>
                     </div>
+                    <i className="bi bi-cart-plus p-3 fs-1"></i>
+                  </div>
                 </div>
-                <div className='col-md-3'>
-                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
-                        <div>
-                            <h3 className='fs-2'>{eventData.length} +</h3>
-                            <p className='fs-5'>Events</p>
-                        </div>
-                        <i className='bi bi-cart-plus p-3 fs-1'></i>
+                <div className="col-md-3">
+                  <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
+                    <div>
+                      <h3 className="fs-2">{eventData.length} +</h3>
+                      <p className="fs-5">Events</p>
                     </div>
+                    <i className="bi bi-cart-plus p-3 fs-1"></i>
+                  </div>
                 </div>
-                <div className='col-md-3'>
-                    <div className='p-3 shadow-sm d-flex justify-content-around align-items-center rounded box'>
-                        <div>
-                            <h3 className='fs-2'>{bookingData.length} +</h3>
-                            <p className='fs-5'>Bookings</p>
-                        </div>
-                        <i className='bi bi-cart-plus p-3 fs-1'></i>
+                <div className="col-md-3">
+                  <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
+                    <div>
+                      <h3 className="fs-2">{bookingData.length} +</h3>
+                      <p className="fs-5">Bookings</p>
                     </div>
+                    <i className="bi bi-cart-plus p-3 fs-1"></i>
+                  </div>
                 </div>
+              </div>
             </div>
-        </div>
-        <div className='row'>
-            <div className='col-6' style={{ width: '400px', height: '400px' }} >
-            <canvas ref={pieChartRef} />
+            <div className="row">
+              <div
+                className="col-6"
+                style={{ width: "400px", height: "400px" }}
+              >
+                <canvas ref={pieChartRef} />
+              </div>
+              <div
+                className="col-6"
+                style={{ width: "600px", height: "400px" }}
+              >
+                <canvas ref={barChartRef}></canvas>
+              </div>
             </div>
-            <div className='col-6'style={{ width: '600px', height: '400px' }} >
-            <canvas ref={barChartRef}></canvas>
-            </div>
-        </div>
-    </div>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;

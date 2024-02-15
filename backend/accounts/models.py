@@ -4,11 +4,12 @@ from .manager import UserManager
 
 # Create your models here.
 
-AUTH_PROVIDERS = {'email':'email', 'google':'google'}
+AUTH_PROVIDERS = {"email": "email", "google": "google"}
+
 
 class User(AbstractBaseUser):
     name = models.CharField(max_length=50)
-    email = models.EmailField(max_length=100, unique = True)
+    email = models.EmailField(max_length=100, unique=True)
 
     otp = models.CharField(max_length=6, null=True, blank=True)
 
@@ -21,22 +22,22 @@ class User(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     is_registered = models.BooleanField(default=False)
 
-    auth_provider= models.CharField(max_length=50, default=AUTH_PROVIDERS.get("email"))
+    auth_provider = models.CharField(max_length=50, default=AUTH_PROVIDERS.get("email"))
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name']
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["name"]
 
     objects = UserManager()
 
     def __str__(self):
         return self.email
-    
+
     def has_perm(self, perm, obj=None):
         return self.is_superuser
-    
+
     def has_module_perms(self, add_label):
         return True
-    
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -45,11 +46,13 @@ class UserProfile(models.Model):
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
     GENDER_CHOICES = [
-    ('M', 'Male'),
-    ('F', 'Female'),
-    ('O', 'Other'),
+        ("M", "Male"),
+        ("F", "Female"),
+        ("O", "Other"),
     ]
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
+    gender = models.CharField(
+        max_length=1, choices=GENDER_CHOICES, blank=True, null=True
+    )
 
     def __str__(self):
         return f"{self.user.name}'s Profile"

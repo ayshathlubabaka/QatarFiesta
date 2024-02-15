@@ -14,9 +14,13 @@ class IsOrganizerPermission(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        if request.user.is_active and request.user.is_organizer and request.user.is_registered:
-            return request.user.is_organizer   
-        
+        if (
+            request.user.is_active
+            and request.user.is_organizer
+            and request.user.is_registered
+        ):
+            return request.user.is_organizer
+
         return False
 
 
@@ -24,32 +28,44 @@ class VisitorOrganizerChatListAPI(generics.ListAPIView):
     model = VisitorOrganizerChat
     serializer_class = VisitorOrganizerChatSerializer
 
-
     def get_queryset(self):
-        
-        group_name = self.request.query_params.get('group_name')
+
+        group_name = self.request.query_params.get("group_name")
 
         if group_name is not None:
-            return VisitorOrganizerChat.objects.filter(group_name=group_name).order_by('-timestamp')
+            return VisitorOrganizerChat.objects.filter(group_name=group_name).order_by(
+                "-timestamp"
+            )
         else:
             return VisitorOrganizerChat.objects.none()
-        
-    
+
     def get_paginated_response(self, data):
-        return Response({
-            'next': self.paginator.page.number + 1 if self.paginator.page.has_next() else None,
-            'previous': self.paginator.page.number - 1 if self.paginator.page.number > 1 else None,
-            'count': self.paginator.page.paginator.count,
-            'results': data
-        })
-    
+        return Response(
+            {
+                "next": (
+                    self.paginator.page.number + 1
+                    if self.paginator.page.has_next()
+                    else None
+                ),
+                "previous": (
+                    self.paginator.page.number - 1
+                    if self.paginator.page.number > 1
+                    else None
+                ),
+                "count": self.paginator.page.paginator.count,
+                "results": data,
+            }
+        )
+
+
 class ViewPendingChatsAPI(APIView):
-    def get(self,request):
+    def get(self, request):
         organizer = request.user
         pendingchats = PendingChat.objects.filter(reciever=organizer)
         serializer = PendingChatsSerializer(pendingchats, many=True)
-        data=serializer.data
+        data = serializer.data
         return Response(data)
+
 
 class ManagePendingChatsAPI(APIView):
     def delete(self, request, chat_id):
@@ -61,16 +77,16 @@ class ManagePendingChatsAPI(APIView):
             return Response(status=status.HTTP_200_OK)
         except PendingChat.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        
+
+
 class SendEmailAPIView(APIView):
     def post(self, request, *args, **kwargs):
         sender = request.user
         sender_email = sender.email
-        recipient = request.data.get('recipient')
-        subject = request.data.get('subject')
-        message = request.data.get('message')
+        recipient = request.data.get("recipient")
+        subject = request.data.get("subject")
+        message = request.data.get("message")
 
-        
         try:
             send_mail(
                 subject,
@@ -79,6 +95,11 @@ class SendEmailAPIView(APIView):
                 [recipient],
                 fail_silently=False,
             )
-            return Response({'message': 'Email sent successfully'}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Email sent successfully"}, status=status.HTTP_200_OK
+            )
         except Exception as e:
-            return Response({'error': 'Failed to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Failed to send email"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

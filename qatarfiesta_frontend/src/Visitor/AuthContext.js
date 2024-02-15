@@ -1,54 +1,59 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [accessToken, setAccessToken] = useState(localStorage.getItem('access_token'));
-  const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refresh_token'));
+  const [accessToken, setAccessToken] = useState(
+    localStorage.getItem("access_token")
+  );
+  const [refreshToken, setRefreshToken] = useState(
+    localStorage.getItem("refresh_token")
+  );
   const [user, setUser] = useState(null);
-  const baseURL = process.env.REACT_APP_API_BASE_URL
+  const baseURL = process.env.REACT_APP_API_BASE_URL;
 
   const handleTokenRefresh = async () => {
     try {
-      const response = await fetch(`${baseURL}/api/v1/accounts/api/token/refresh/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          refresh: refreshToken,
-        }),
-      });
+      const response = await fetch(
+        `${baseURL}/api/v1/accounts/api/token/refresh/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            refresh: refreshToken,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Token refresh failed');
+        throw new Error("Token refresh failed");
       }
 
       const { access, refresh } = await response.json();
       setAccessToken(access);
       setRefreshToken(refresh);
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-
+      localStorage.setItem("access_token", access);
+      localStorage.setItem("refresh_token", refresh);
     } catch (error) {
-      console.error('Token refresh failed', error);
+      console.error("Token refresh failed", error);
     }
   };
 
   const fetchUser = async () => {
     try {
       const response = await fetch(`${baseURL}/api/v1/accounts/user/`, {
-        method: 'GET',
+        method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       if (!response.ok) {
-        throw new Error('Request failed');
+        throw new Error("Request failed");
       }
       const userData = await response.json();
       setUser(userData);
-
     } catch (error) {
       if (error.status === 401) {
         await handleTokenRefresh();
@@ -64,9 +69,7 @@ export const AuthProvider = ({ children }) => {
   }, [accessToken]);
 
   return (
-    <AuthContext.Provider value={{ user }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
   );
 };
 
