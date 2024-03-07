@@ -6,18 +6,19 @@ function OrgDashboard() {
   const [categoryData, setCategoryList] = useState([]);
   const [eventData, setEventList] = useState([]);
   const [bookingData, setBookingList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const baseURL = process.env.REACT_APP_API_BASE_URL;
 
   const pieChartRef = useRef(null);
   const barChartRef = useRef(null);
 
-  const fetchCategoryList = async (e) => {
+  const fetchCategoryList = async () => {
     try {
       const response = await fetch(`${baseURL}/api/v1/admin/category/`);
       const result = await response.json();
       setCategoryList(result);
     } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Error fetching category data", error);
     }
   };
 
@@ -35,7 +36,7 @@ function OrgDashboard() {
       const result = await response.json();
       setEventList(result);
     } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Error fetching event data", error);
     }
   };
 
@@ -52,9 +53,10 @@ function OrgDashboard() {
       }
       const data = await response.json();
       setBookingList(data);
-      console.log(data);
     } catch (error) {
-      console.error("Error fetching data", error);
+      console.error("Error fetching booking data", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,54 +149,56 @@ function OrgDashboard() {
     fetchBookingList();
   }, []);
 
+
+
   return (
     <div className="container-fluid">
-      <div className="row">
-        <div className="col-2 sidebar">
-          <Sidebar />
-        </div>
-        <div className="col-9">
-          <div className="px-3">
-            <div className="container-fluid">
-              <div className="row g-3 my-2">
-                <div className="col-md-6">
-                  <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
-                    <div>
-                      <h3 className="fs-2">{eventData.length} +</h3>
-                      <p className="fs-5">Events</p>
-                    </div>
-                    <i className="bi bi-cart-plus p-3 fs-1"></i>
+    <div className="row">
+      <div className="col-2 sidebar">
+        <Sidebar />
+      </div>
+      <div className="col">
+        <div className="px-3">
+          <div className="container-fluid">
+            <div className="row g-3 my-2">
+              <div className="col-md-6">
+                <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
+                  <div>
+                    <h3 className="fs-2">{eventData.length} +</h3>
+                    <p className="fs-5">Events</p>
                   </div>
+                  <i className="bi bi-cart-plus p-3 fs-1"></i>
                 </div>
-                <div className="col-md-6">
-                  <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
-                    <div>
-                      <h3 className="fs-2">{bookingData.length} +</h3>
-                      <p className="fs-5">Bookings</p>
-                    </div>
-                    <i className="bi bi-cart-plus p-3 fs-1"></i>
+              </div>
+              <div className="col-md-6">
+                <div className="p-3 shadow-sm d-flex justify-content-around align-items-center rounded box">
+                  <div>
+                    <h3 className="fs-2">{bookingData.length} +</h3>
+                    <p className="fs-5">Bookings</p>
                   </div>
+                  <i className="bi bi-cart-plus p-3 fs-1"></i>
                 </div>
               </div>
             </div>
-            <div className="row">
-              <div
-                className="col-6"
-                style={{ width: "400px", height: "400px" }}
-              >
-                <canvas ref={pieChartRef} />
-              </div>
-              <div
-                className="col-6"
-                style={{ width: "600px", height: "400px" }}
-              >
-                <canvas ref={barChartRef}></canvas>
-              </div>
+          </div>
+          <div className="row">
+            <div
+              className="col-6"
+              style={{ width: "400px", height: "400px" }}
+            >
+              <canvas ref={pieChartRef} />
+            </div>
+            <div
+              className="col-6"
+              style={{ width: "600px", height: "400px" }}
+            >
+              <canvas ref={barChartRef}></canvas>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }
 

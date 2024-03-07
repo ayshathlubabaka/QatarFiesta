@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../AuthContext";
 
 function OrderStatus() {
@@ -7,6 +7,7 @@ function OrderStatus() {
   const queryParams = new URLSearchParams(location.search);
   const isPaymentCanceled = queryParams.get("canceled") === "true";
   const isSuccess = queryParams.get("success") === "true";
+  const navigate=useNavigate('')
   const bookingId = queryParams.get("bookingId");
 
   const baseURL = process.env.REACT_APP_API_BASE_URL;
@@ -65,12 +66,33 @@ function OrderStatus() {
           <h2 className="text-2xl font-semibold text-blue-300 font-serif">
             Payment Successfully Completed
           </h2>
-          <Link
-            to="/"
-            className="mt-4 bg-customColorA font-serif text-dark px-4 py-2 rounded-lg"
-          >
-            Go to Home
-          </Link>
+          <button 
+  onClick={() => navigate('/my-booking/')} 
+  style={{ 
+    backgroundColor: "green", 
+    color: "white", 
+    borderRadius: "5px",
+    padding: "10px 20px", // optional: adjust padding as needed
+    border: "none", // optional: remove border
+    cursor: "pointer" // optional: add pointer cursor
+  }}
+>
+  View Your Booking
+</button>
+
+<button 
+  onClick={() => navigate('/')} 
+  style={{ 
+    backgroundColor: "blue", 
+    color: "white", 
+    borderRadius: "5px",
+    padding: "10px 20px", // optional: adjust padding as needed
+    border: "none", // optional: remove border
+    cursor: "pointer" // optional: add pointer cursor
+  }}
+>
+  Go to Home
+</button>
         </div>
       )}
     </div>

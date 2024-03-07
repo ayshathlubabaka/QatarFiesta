@@ -18,6 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 from datetime import timedelta
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = True
 
@@ -46,11 +51,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    'cloudinary',
 ]
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -122,7 +129,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'qatarfiesta.wsgi.application'
+WSGI_APPLICATION = 'qatarfiesta.wsgi.application'
 ASGI_APPLICATION = "qatarfiesta.asgi.application"
 
 CHANNEL_LAYERS = {
@@ -134,14 +141,19 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": config("DB_ENGINE"),
+#         "NAME": config("DB_NAME"),
+#         "USER": config("DB_USER"),
+#         "PASSWORD": config("DB_PASSWORD"),
+#         "HOST": config("DB_HOST"),
+#     }
+# }
+import dj_database_url
+
 DATABASES = {
-    "default": {
-        "ENGINE": config("DB_ENGINE"),
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-    }
+    'default': dj_database_url.parse(config('DB_URL'))
 }
 
 
@@ -232,3 +244,12 @@ CELERY_TIMEZONE = "UTC"
 CELERY_IMPORTS = ["accounts.tasks"]
 
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+
+#Cloudinary 
+
+cloudinary.config(
+    cloud_name="dwatpmidh",
+    api_key="568955193363713",
+    api_secret="R9FJqAEqovSKUTHFG4SzcdxBiII",
+)

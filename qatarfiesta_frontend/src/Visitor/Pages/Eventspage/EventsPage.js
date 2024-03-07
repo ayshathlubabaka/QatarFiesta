@@ -19,6 +19,8 @@ function EventsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { user } = useAuth("");
   const baseURL = process.env.REACT_APP_API_BASE_URL;
+  const cloudURL = process.env.REACT_APP_CLOUDINARY_URL;
+
   const itemsPerPage = 4;
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -146,7 +148,7 @@ function EventsPage() {
         <div key={id} className="card mb-3 mx-3" style={{ width: "30rem" }}>
           <img
             className="card-img-top"
-            src={item.image}
+            src={cloudURL + item.image}
             alt="Card image cap"
             style={{ height: "15rem" }}
           />

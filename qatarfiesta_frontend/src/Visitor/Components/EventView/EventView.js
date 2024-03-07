@@ -15,6 +15,7 @@ function EventView() {
   const [categoryData, setcategoryData] = useState([]);
   const [contactState, setContactState] = useState(true);
   const baseURL = process.env.REACT_APP_API_BASE_URL;
+  const cloudURL = process.env.REACT_APP_CLOUDINARY_URL;
 
   const fetchEventData = async () => {
     try {
@@ -69,7 +70,7 @@ function EventView() {
               <h4 className="event-title">{eventData.title}</h4>
               <div className="image-map-container">
                 <img
-                  src={eventData.image}
+                  src={cloudURL + eventData.image}
                   alt="event-image"
                   className="event-image"
                 />

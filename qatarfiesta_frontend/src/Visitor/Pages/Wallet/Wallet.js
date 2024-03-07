@@ -31,7 +31,7 @@ function Wallet() {
   const fetchTransactionData = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/stripe/transaction/",
+        `${baseURL}/api/stripe/transaction/`,
         {
           method: "GET",
           headers: {

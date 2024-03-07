@@ -11,6 +11,7 @@ function Events() {
   const itemsPerPage = 3;
   const [currentPage, setCurrentPage] = useState(0);
   const baseURL = process.env.REACT_APP_API_BASE_URL;
+  const cloudURL = process.env.REACT_APP_CLOUDINARY_URL;
 
   const handleClick = (newPage) => {
     setCurrentPage(newPage);
@@ -62,7 +63,7 @@ function Events() {
             <div key={id} className="card mb-3 mx-3 p-2">
               <img
                 className="card-img-top"
-                src={item.image}
+                src={cloudURL + item.image}
                 alt="Card image cap"
                 style={{ height: "20rem" }}
               />

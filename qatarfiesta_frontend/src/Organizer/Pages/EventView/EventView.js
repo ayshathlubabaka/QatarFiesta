@@ -13,6 +13,7 @@ function EventView() {
   const [eventData, setEventData] = useState("");
   const navigate = useNavigate();
   const baseURL = process.env.REACT_APP_API_BASE_URL;
+  const cloudURL = process.env.REACT_APP_CLOUDINARY_URL;
 
   const [accessToken, setAccessToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
@@ -104,7 +105,7 @@ function EventView() {
               <h4 className="event-title">{eventData.title}</h4>
               <div className="image-map-container">
                 <img
-                  src={eventData.image}
+                  src={cloudURL + eventData.image}
                   alt="event-image"
                   className="event-image"
                 />

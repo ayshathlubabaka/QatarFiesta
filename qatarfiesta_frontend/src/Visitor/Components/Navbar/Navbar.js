@@ -19,7 +19,7 @@ const Navbar = ({ contactState = false, event_id = null }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSubmitEvent = () => {
-    const destinationURL = "/organizer/";
+    const destinationURL = "/organizer/login/";
 
     window.location.href = destinationURL;
   };

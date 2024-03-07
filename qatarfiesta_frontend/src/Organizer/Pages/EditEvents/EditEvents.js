@@ -8,16 +8,69 @@ import Sidebar from "../../Components/Sidebar/Sidebar";
 function EditEvents() {
   const { event_id } = useParams();
   const navigate = useNavigate("");
+  const [data, setData] = useState('')
+  const [title, setTitle] = useState('')
   const baseURL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
+    fetchUser();
     fetchCategoryData();
     fetchEventData();
   }, []);
 
+  const handleTokenRefresh = async () => {
+    try {
+      const response = await fetch(
+        `${baseURL}/api/v1/accounts/api/token/refresh/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            refresh: localStorage.getItem('refresh_token'),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Token refresh failed");
+      }
+
+      const { access, refresh } = await response.json();
+
+      localStorage.setItem("access_token", access);
+      localStorage.setItem("refresh_token", refresh);
+    } catch (error) {
+      console.error("Token refresh failed", error);
+    }
+  };
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(`${baseURL}/api/v1/accounts/organizer/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!response.ok) {
+        navigate("/organizer/login/");
+        throw new Error("Request failed");
+      }
+      const userData = await response.json();
+      setData(userData);
+      console.log(userData);
+    } catch (error) {
+      if (error.status === 401) {
+        await handleTokenRefresh();
+        await fetchUser();
+      }
+    }
+  };
+
   const [categoryData, setCategoryData] = useState([]);
   const [eventData, setEventData] = useState({
-    title: "",
     venue: "",
     address: "",
     latitude: "",
@@ -45,26 +98,21 @@ function EditEvents() {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    console.log(file);
-    setEventData({ ...eventData, image: file });
-  };
-
   const handleUpdateEvent = async (e) => {
     e.preventDefault();
-
     try {
       const response = await fetch(
         `${baseURL}/api/v1/organizer/event-change/${event_id}/`,
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json", // Set the content type to JSON
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           credentials: "include",
-          body: JSON.stringify(eventData),
+          body: JSON.stringify({
+            ...eventData,
+          })
         }
       );
 
@@ -99,9 +147,9 @@ function EditEvents() {
       const selectedObject = result.find(
         (event) => event.id === parseInt(event_id)
       );
+      setTitle(selectedObject.title)
       setEventData({
         ...eventData,
-        title: selectedObject.title,
         venue: selectedObject.venue,
         address: selectedObject.address,
         latitude: selectedObject.latitude,
@@ -114,7 +162,6 @@ function EditEvents() {
         category: selectedObject.category,
         ticketPrice: selectedObject.ticketPrice,
         ticketQuantity: selectedObject.ticketQuantity,
-        image: selectedObject.image,
       });
     } catch (error) {
       console.error("Error fetching data", error);
@@ -132,7 +179,7 @@ function EditEvents() {
           <div className="header bg-light p-1">
             <div className="table-border m-5 p-2">
               <form onSubmit={handleUpdateEvent}>
-                <h4>Add Event</h4>
+                <h4>Edit Event</h4>
                 <div className="row mb-3">
                   <div className="form-group col-md-6">
                     <label htmlFor="title">Title</label>
@@ -141,10 +188,7 @@ function EditEvents() {
                       className="form-control"
                       id="title"
                       name="title"
-                      value={eventData.title}
-                      onChange={(e) =>
-                        setEventData({ ...eventData, title: e.target.value })
-                      }
+                      value={title}
                     />
                   </div>
                   <div className="form-group col-md-6">
@@ -208,7 +252,6 @@ function EditEvents() {
                       id="image"
                       name="image"
                       accept="image/*"
-                      onChange={handleFileChange}
                     />
                   </div>
                 </div>

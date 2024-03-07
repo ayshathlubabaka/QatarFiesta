@@ -37,6 +37,7 @@ function Register() {
         alert(
           "Please check your email and enter the OTP to complete the registration. !"
         );
+        
         navigate("/organizer/otp/");
       } else {
         alert("this email already exist");

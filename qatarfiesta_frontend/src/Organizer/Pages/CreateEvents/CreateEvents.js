@@ -23,9 +23,61 @@ function CreateEvents({ organizerId }) {
   const [ticketPrice, setTicketPrice] = useState("");
   const [ticketQuantity, setTicketQuantity] = useState("");
   const [image, setImage] = useState(null);
+  const [data, setData] = useState('')
   const baseURL = process.env.REACT_APP_API_BASE_URL;
 
   const navigate = useNavigate();
+
+  const handleTokenRefresh = async () => {
+    try {
+      const response = await fetch(
+        `${baseURL}/api/v1/accounts/api/token/refresh/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            refresh: localStorage.getItem('refresh_token'),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Token refresh failed");
+      }
+
+      const { access, refresh } = await response.json();
+
+      localStorage.setItem("access_token", access);
+      localStorage.setItem("refresh_token", refresh);
+    } catch (error) {
+      console.error("Token refresh failed", error);
+    }
+  };
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(`${baseURL}/api/v1/accounts/organizer/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!response.ok) {
+        navigate("/organizer/login/");
+        throw new Error("Request failed");
+      }
+      const userData = await response.json();
+      setData(userData);
+      console.log(userData);
+    } catch (error) {
+      if (error.status === 401) {
+        await handleTokenRefresh();
+        await fetchUser();
+      }
+    }
+  };
 
   const [eventLocation, setEventLocation] = useState({
     latitude: 25.2598,
@@ -62,7 +114,8 @@ function CreateEvents({ organizerId }) {
       formData.append("startTime", startTime);
       formData.append("endTime", endTime);
       formData.append("category", category);
-      formData.append("organizer", organizerId.toString());
+      console.log(data.id)
+      formData.append("organizer", data.id.toString());
       formData.append("ticketPrice", ticketPrice);
       formData.append("ticketQuantity", ticketQuantity);
 
@@ -116,8 +169,8 @@ function CreateEvents({ organizerId }) {
       console.error("Error fetching data", error);
     }
   };
-
   useEffect(() => {
+    fetchUser();
     fetchCategoryData();
   }, []);
 

@@ -47,6 +47,7 @@ function Register() {
         alert(
           "Please check your email and enter the OTP to complete the registration."
         );
+        localStorage.setItem('email',email)
         navigate("/otp/");
       } else {
         alert(data.errors);

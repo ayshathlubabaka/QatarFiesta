@@ -1,0 +1,54 @@
+
+celery -A qatarfiesta beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+celery -A qatarfiesta worker -l INFO
+
+[
+  {
+    "title": "Kids Festival",
+    "venue": "Central Park",
+    "address": "123 Main St, Cityville",
+    "description": "Join us for a fun-filled day at Central Park with activities for kids of all ages. There will be games, face painting, food trucks, and more!",
+    "date": "2024-08-10",
+    "time": "10:00 AM - 4:00 PM"
+  },
+  {
+    "title": "Summer Camp Adventure",
+    "venue": "Greenwood Nature Preserve",
+    "address": "456 Oak Ave, Townsville",
+    "description": "Embark on an outdoor adventure at Greenwood Nature Preserve! Kids will learn about nature, go on hikes, make crafts, and enjoy campfire stories.",
+    "date": "2024-07-15",
+    "time": "9:00 AM - 3:00 PM"
+  },
+  {
+    "title": "Art Workshop for Kids",
+    "venue": "City Arts Center",
+    "address": "789 Elm St, Artville",
+    "description": "Unleash your child's creativity at our art workshop! They'll have the chance to paint, draw, sculpt, and express themselves through various artistic mediums.",
+    "date": "2024-09-05",
+    "time": "1:00 PM - 4:00 PM"
+  },
+  {
+    "title": "Science Fair",
+    "venue": "City Convention Center",
+    "address": "101 Science Blvd, Sciencetown",
+    "description": "Explore the wonders of science at our annual science fair! There will be interactive exhibits, hands-on experiments, and presentations by young scientists.",
+    "date": "2024-10-20",
+    "time": "11:00 AM - 5:00 PM"
+  },
+  {
+    "title": "Music Concert in the Park",
+    "venue": "Riverside Park",
+    "address": "200 River Rd, Melodyville",
+    "description": "Enjoy an evening of live music at Riverside Park! Bring your picnic blanket and relax to the sounds of local bands performing a variety of musical genres.",
+    "date": "2024-06-30",
+    "time": "6:00 PM - 9:00 PM"
+  },
+  {
+    "title": "Sports Camp",
+    "venue": "City Sports Complex",
+    "address": "300 Stadium Dr, Sportstown",
+    "description": "Calling all young athletes! Join us for a week-long sports camp where you can improve your skills in soccer, basketball, baseball, and more.",
+    "date": "2024-07-10",
+    "time": "9:00 AM - 12:00 PM (Daily)"
+  }
+]

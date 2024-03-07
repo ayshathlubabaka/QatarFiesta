@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 function Otp() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  // const [email, setEmail] = useState("");
+  const email = localStorage.getItem('email')
   const [otp, setOtp] = useState("");
   const baseURL = process.env.REACT_APP_API_BASE_URL;
 
@@ -58,12 +59,12 @@ function Otp() {
                 To complete registration an otp is sent to your email. Enter otp
                 here.
               </p>
-              <input
+              {/* <input
                 type="email"
                 className="login_input"
                 placeholder="Enter your email"
                 onChange={(e) => setEmail(e.target.value)}
-              />
+              /> */}
               <input
                 type="text"
                 className="login_input"

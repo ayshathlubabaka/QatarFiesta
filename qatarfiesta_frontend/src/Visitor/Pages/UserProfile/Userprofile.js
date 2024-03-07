@@ -61,7 +61,7 @@ function Userprofile() {
   const handleEdit = async (e) => {
     e.preventDefault();
     try {
-      await fetch("http://127.0.0.1:8000/api/v1/accounts/userprofile/", {
+      await fetch(`${baseURL}/api/v1/accounts/userprofile/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -81,7 +81,7 @@ function Userprofile() {
     e.preventDefault();
 
     try {
-      await fetch("http://127.0.0.1:8000/api/v1/accounts/userprofile/", {
+      await fetch(`${baseURL}/api/v1/accounts/userprofile/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -192,7 +192,7 @@ function ManageEvent() {
                 <Table striped bordered hover responsive>
                   <thead>
                     <tr>
-                      <th>User Id</th>
+                      <th>EventId</th>
                       <th>Name</th>
                       <th>Venue</th>
                       <th>Status</th>

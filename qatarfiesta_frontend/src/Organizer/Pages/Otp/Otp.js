@@ -6,6 +6,7 @@ function Otp() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
+  // const email = localStorage.getItem("email")
   const [otp, setOtp] = useState("");
   const baseURL = process.env.REACT_APP_API_BASE_URL;
 
